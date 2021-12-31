@@ -38,8 +38,8 @@ DEFAULT_MMS_CONFIG_FILE = pkg_resources.resource_filename(
 MME_MMS_CONFIG_FILE = pkg_resources.resource_filename(
     sagemaker_inference.__name__, "/etc/mme-mms.properties"
 )
-DEFAULT_MMS_LOG_FILE = pkg_resources.resource_filename(
-    sagemaker_inference.__name__, "/etc/log4j.properties"
+DEFAULT_MMS_LOG_FILE = os.getenv('SAGEMAKER_LOG4J_CONFIG', pkg_resources.resource_filename(
+    sagemaker_inference.__name__, "/etc/log4j.properties")
 )
 DEFAULT_MMS_MODEL_DIRECTORY = os.path.join(os.getcwd(), ".sagemaker/mms/models")
 DEFAULT_MMS_MODEL_NAME = "model"
@@ -87,9 +87,12 @@ def start_model_server(handler_service=DEFAULT_HANDLER_SERVICE):
         MODEL_STORE,
         "--mms-config",
         MMS_CONFIG_FILE,
-        "--log-config",
-        DEFAULT_MMS_LOG_FILE,
     ]
+    if DEFAULT_MMS_LOG_FILE:
+        multi_model_server_cmd += [
+            "--log-config",
+            DEFAULT_MMS_LOG_FILE,
+        ]
 
     logger.info(multi_model_server_cmd)
     subprocess.Popen(multi_model_server_cmd)
